@@ -1,0 +1,80 @@
+{
+    "project_name": "ZK-ID Vault",
+    "components": {
+        "smart_contracts": {
+            "identity_vault": {
+                "build_command": "cd contracts/identity-vault && cargo contract build",
+                "deploy_command": "cargo contract instantiate --suri //Alice --constructor new",
+                "test_command": "cargo contract test"
+            },
+            "attestation": {
+                "build_command": "cd contracts/attestation && cargo contract build",
+                "deploy_command": "cargo contract instantiate --suri //Alice --constructor new",
+                "test_command": "cargo contract test"
+            }
+        },
+        "zk_circuits": {
+            "age_verification": {
+                "build_command": "cd circuits/age-verification && cargo build",
+                "test_command": "cargo test",
+                "generate_proof_command": "cargo run --example generate_proof"
+            },
+            "kyc_verification": {
+                "build_command": "cd circuits/kyc-verification && cargo build",
+                "test_command": "cargo test",
+                "generate_proof_command": "cargo run --example generate_proof"
+            }
+        },
+        "runtime": {
+            "zk_verifier": {
+                "build_command": "cd runtime/zk-verifier && cargo build --release",
+                "test_command": "cargo test",
+                "run_node_command": "./target/release/zk-id-vault-node --dev"
+            }
+        }
+    },
+    "setup_instructions": [
+        "1. Install Rust and Cargo:",
+        "   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh",
+        "",
+        "2. Install ink! CLI:",
+        "   cargo install cargo-contract --force",
+        "",
+        "3. Install Node.js dependencies:",
+        "   cd frontend && npm install",
+        "",
+        "4. Build all components:",
+        "   ./scripts/build-all.sh",
+        "",
+        "5. Run tests:",
+        "   ./scripts/test-all.sh",
+        "",
+        "6. Deploy contracts:",
+        "   ./scripts/deploy-contracts.sh",
+        "",
+        "7. Start the node:",
+        "   ./scripts/start-node.sh"
+    ],
+    "example_usage": {
+        "age_verification": {
+            "generate_proof": {
+                "command": "cd circuits/age-verification && cargo run --example generate_proof -- --birth-year 1990 --current-year 2024 --minimum-age 18",
+                "output": "Generates a ZK proof for age verification"
+            },
+            "verify_proof": {
+                "command": "cd runtime/zk-verifier && cargo run --example verify_proof -- --proof-file proof.json",
+                "output": "Verifies the generated ZK proof"
+            }
+        },
+        "kyc_verification": {
+            "generate_proof": {
+                "command": "cd circuits/kyc-verification && cargo run --example generate_proof -- --document-hash 0x1234 --signature 0x5678 --public-key 0x9abc",
+                "output": "Generates a ZK proof for KYC verification"
+            },
+            "verify_proof": {
+                "command": "cd runtime/zk-verifier && cargo run --example verify_proof -- --proof-file kyc_proof.json",
+                "output": "Verifies the generated KYC ZK proof"
+            }
+        }
+    }
+} 
