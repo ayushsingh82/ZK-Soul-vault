@@ -1,15 +1,13 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use ink_lang as ink;
-use ink_prelude::vec::Vec;
-use ink_storage::traits::SpreadAllocate;
-
 #[ink::contract]
 mod identity_vault {
-    use super::*;
+    use ink::storage::Mapping;
+    use ink::prelude::vec::Vec;
+    use scale::{Decode, Encode};
+    use scale_info::TypeInfo;
 
-    #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
-    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+    #[derive(Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
     pub struct Attestation {
         credential_type: Vec<u8>,
         proof: Vec<u8>,
@@ -17,14 +15,13 @@ mod identity_vault {
     }
 
     #[ink(storage)]
-    #[derive(SpreadAllocate)]
     pub struct IdentityVault {
         owner: AccountId,
-        attestations: ink_storage::Mapping<AccountId, Vec<Attestation>>,
+        attestations: Mapping<AccountId, Vec<Attestation>>,
     }
 
-    #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
-    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+    #[derive(Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
+    #[allow(clippy::cast_possible_truncation)]
     pub enum Error {
         NotAuthorized,
         InvalidProof,
@@ -33,12 +30,19 @@ mod identity_vault {
 
     pub type Result<T> = core::result::Result<T, Error>;
 
+    impl Default for IdentityVault {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl IdentityVault {
         #[ink(constructor)]
         pub fn new() -> Self {
-            ink_lang::utils::initialize_contract(|contract: &mut Self| {
-                contract.owner = Self::env().caller();
-            })
+            Self {
+                owner: Self::env().caller(),
+                attestations: Mapping::default(),
+            }
         }
 
         #[ink(message)]
@@ -53,7 +57,6 @@ mod identity_vault {
                 return Err(Error::NotAuthorized);
             }
 
-            // TODO: Verify ZK proof here
             if !self.verify_proof(&proof) {
                 return Err(Error::InvalidProof);
             }
@@ -93,10 +96,9 @@ mod identity_vault {
             Ok(false)
         }
 
-        fn verify_proof(&self, proof: &[u8]) -> bool {
+        fn verify_proof(&self, _proof: &[u8]) -> bool {
             // TODO: Implement ZK proof verification
             // This is a placeholder that always returns true
-            // In production, this should verify the ZK proof using the runtime module
             true
         }
     }
@@ -108,22 +110,24 @@ mod identity_vault {
         #[ink::test]
         fn new_works() {
             let contract = IdentityVault::new();
-            assert_eq!(contract.owner, AccountId::from([0x1; 32]));
+            assert_eq!(contract.owner, ink::env::test::default_accounts::<ink::env::DefaultEnvironment>().alice);
         }
 
         #[ink::test]
         fn add_attestation_works() {
+            let accounts = ink::env::test::default_accounts::<ink::env::DefaultEnvironment>();
+            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
             let mut contract = IdentityVault::new();
-            let account = AccountId::from([0x2; 32]);
+            
             let credential_type = b"age".to_vec();
             let proof = b"proof".to_vec();
 
             assert_eq!(
-                contract.add_attestation(account, credential_type.clone(), proof.clone()),
+                contract.add_attestation(accounts.bob, credential_type.clone(), proof.clone()),
                 Ok(())
             );
 
-            let attestations = contract.get_attestations(account);
+            let attestations = contract.get_attestations(accounts.bob);
             assert_eq!(attestations.len(), 1);
             assert_eq!(attestations[0].credential_type, credential_type);
             assert_eq!(attestations[0].proof, proof);

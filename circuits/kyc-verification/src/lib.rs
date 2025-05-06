@@ -20,19 +20,22 @@ impl ConstraintSynthesizer<ark_bls12_381::Fr> for KYCVerificationCircuit {
         cs: ConstraintSystemRef<ark_bls12_381::Fr>,
     ) -> Result<(), SynthesisError> {
         // Allocate document hash as private input
-        let document_hash = UInt8::new_witness_vec(cs.clone(), || {
-            self.document_hash.ok_or(SynthesisError::AssignmentMissing)
-        })?;
+        let document_hash = UInt8::new_witness_vec(
+            cs.clone(),
+            &self.document_hash.as_ref().ok_or(SynthesisError::AssignmentMissing)?.as_slice(),
+        )?;
 
         // Allocate signature as private input
-        let signature = UInt8::new_witness_vec(cs.clone(), || {
-            self.signature.ok_or(SynthesisError::AssignmentMissing)
-        })?;
+        let signature = UInt8::new_witness_vec(
+            cs.clone(),
+            &self.signature.as_ref().ok_or(SynthesisError::AssignmentMissing)?.as_slice(),
+        )?;
 
         // Allocate public key as public input
-        let public_key = UInt8::new_input_vec(cs.clone(), || {
-            self.public_key.ok_or(SynthesisError::AssignmentMissing)
-        })?;
+        let public_key = UInt8::new_input_vec(
+            cs.clone(),
+            &self.public_key.as_ref().ok_or(SynthesisError::AssignmentMissing)?.as_slice(),
+        )?;
 
         // Allocate verification result as public input
         let verification_result = Boolean::new_input(cs.clone(), || {

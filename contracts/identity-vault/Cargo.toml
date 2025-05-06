@@ -6,13 +6,13 @@ authors = ["Your Name <your.email@example.com>"]
 description = "ZK-verified identity vault smart contract"
 
 [dependencies]
-ink = { version = "4.0.0", default-features = false }
-ink_env = { version = "4.0.0", default-features = false }
-ink_storage = { version = "4.0.0", default-features = false }
-ink_primitives = { version = "4.0.0", default-features = false }
-ink_prelude = { version = "4.0.0", default-features = false }
-scale = { version = "3.0.0", default-features = false, features = ["derive"] }
-scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
+ink = { version = "4.3.0", default-features = false }
+ink_env = { version = "4.3.0", default-features = false }
+ink_storage = { version = "4.3.0", default-features = false }
+ink_primitives = { version = "4.3.0", default-features = false }
+ink_prelude = { version = "4.3.0", default-features = false }
+scale = { package = "parity-scale-codec", version = "3.6.5", default-features = false, features = ["derive"] }
+scale-info = { version = "2.9.0", default-features = false, features = ["derive"] }
 
 [lib]
 path = "src/lib.rs"
