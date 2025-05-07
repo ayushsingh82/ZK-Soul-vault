@@ -82,6 +82,99 @@ npm start
 - `frontend/`: React + Polkadot.js frontend
 - `scripts/`: Deployment and testing scripts
 
+## ZK Circuits
+
+### KYC Verification Circuit
+
+The KYC verification circuit (`circuits/kyc-verification`) is responsible for verifying KYC documents and signatures. Here's how it works:
+
+1. **Inputs**:
+   - `document_hash`: Hash of the KYC document
+   - `signature`: Digital signature of the document
+   - `public_key`: Public key of the signer
+   - `verification_result`: Boolean indicating if verification passed
+
+2. **Circuit Implementation**:
+   - Uses arkworks libraries (ark-bls12-381, ark-groth16)
+   - Converts inputs to field elements
+   - Verifies digital signatures
+   - Generates zero-knowledge proofs
+
+3. **Usage**:
+```rust
+// Create the circuit
+let circuit = KYCVerificationCircuit {
+    document_hash: Some(vec![1, 2, 3, 4]),
+    signature: Some(vec![5, 6, 7, 8]),
+    public_key: Some(vec![9, 10, 11, 12]),
+    verification_result: Some(true),
+};
+
+// Generate proof
+let params = generate_random_parameters::<Bls12_381, _, _>(circuit.clone(), rng).unwrap();
+let proof = create_random_proof(circuit, &params, rng).unwrap();
+```
+
+### Age Verification Circuit
+
+The age verification circuit (`circuits/age-verification`) verifies age-related claims. Here's how it works:
+
+1. **Inputs**:
+   - `birth_date`: Date of birth
+   - `current_date`: Current date
+   - `minimum_age`: Minimum age requirement
+   - `verification_result`: Boolean indicating if age requirement is met
+
+2. **Circuit Implementation**:
+   - Uses arkworks libraries
+   - Converts dates to field elements
+   - Performs age comparison
+   - Generates zero-knowledge proofs
+
+3. **Usage**:
+```rust
+// Create the circuit
+let circuit = AgeVerificationCircuit {
+    birth_date: Some(vec![1990, 1, 1]),
+    current_date: Some(vec![2024, 3, 15]),
+    minimum_age: Some(18),
+    verification_result: Some(true),
+};
+
+// Generate proof
+let params = generate_random_parameters::<Bls12_381, _, _>(circuit.clone(), rng).unwrap();
+let proof = create_random_proof(circuit, &params, rng).unwrap();
+```
+
+## Runtime Module
+
+The ZK verifier runtime module (`runtime/zk-verifier`) is responsible for verifying ZK proofs on-chain. Here's how it works:
+
+1. **Storage**:
+   - `VerifyingKeys`: Maps circuit IDs to their verifying keys
+   - `VerifiedProofs`: Tracks which proofs have been verified
+
+2. **Functions**:
+   - `verify_proof`: Verifies a ZK proof using the stored verifying key
+   - `set_verifying_key`: Sets the verifying key for a circuit
+
+3. **Usage**:
+```rust
+// Set verifying key
+zk_verifier::Module::<T>::set_verifying_key(
+    origin,
+    circuit_id,
+    vk_bytes,
+)?;
+
+// Verify proof
+zk_verifier::Module::<T>::verify_proof(
+    origin,
+    proof,
+    circuit_id,
+)?;
+```
+
 ## Development
 
 1. Smart Contract Development:

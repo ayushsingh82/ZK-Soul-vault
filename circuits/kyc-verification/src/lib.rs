@@ -19,32 +19,31 @@ impl ConstraintSynthesizer<ark_bls12_381::Fr> for KYCVerificationCircuit {
         self,
         cs: ConstraintSystemRef<ark_bls12_381::Fr>,
     ) -> Result<(), SynthesisError> {
-        // Allocate document hash as private input
-        let document_hash = UInt8::new_witness_vec(
-            cs.clone(),
-            &self.document_hash.as_ref().ok_or(SynthesisError::AssignmentMissing)?.as_slice(),
+        // Convert document hash to field elements
+        let _document_hash = UInt8::new_witness_vec(
+            ark_relations::r1cs::ns!(cs, "document_hash"),
+            || Ok(self.document_hash.unwrap_or_default()),
         )?;
 
-        // Allocate signature as private input
-        let signature = UInt8::new_witness_vec(
-            cs.clone(),
-            &self.signature.as_ref().ok_or(SynthesisError::AssignmentMissing)?.as_slice(),
+        // Convert signature to field elements
+        let _signature = UInt8::new_witness_vec(
+            ark_relations::r1cs::ns!(cs, "signature"),
+            || Ok(self.signature.unwrap_or_default()),
         )?;
 
-        // Allocate public key as public input
-        let public_key = UInt8::new_input_vec(
-            cs.clone(),
-            &self.public_key.as_ref().ok_or(SynthesisError::AssignmentMissing)?.as_slice(),
+        // Convert public key to field elements
+        let _public_key = UInt8::new_input_vec(
+            ark_relations::r1cs::ns!(cs, "public_key"),
+            || Ok(self.public_key.unwrap_or_default()),
         )?;
 
-        // Allocate verification result as public input
-        let verification_result = Boolean::new_input(cs.clone(), || {
-            self.verification_result.ok_or(SynthesisError::AssignmentMissing)
+        // TODO: Add signature verification constraints
+        // For now, we'll just enforce that verification_result is true
+        let verification_result = Boolean::new_witness(ark_relations::r1cs::ns!(cs, "verification_result"), || {
+            Ok(self.verification_result.unwrap_or(false))
         })?;
 
-        // TODO: Implement actual signature verification constraints
-        // This is a simplified version that just checks if the result is true
-        verification_result.enforce_equal(&Boolean::constant(true))?;
+        verification_result.enforce_equal(&Boolean::TRUE)?;
 
         Ok(())
     }

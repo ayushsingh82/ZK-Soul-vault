@@ -1,7 +1,6 @@
 use ark_bls12_381::Bls12_381;
 use ark_groth16::{
     generate_random_parameters, create_random_proof,
-    ProvingKey, VerifyingKey,
 };
 use ark_serialize::CanonicalSerialize;
 use ark_std::rand::thread_rng;
