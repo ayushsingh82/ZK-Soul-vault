@@ -1,4 +1,4 @@
-# ZK-ID Vault
+# ZK-Soul Vault
 
 A ZK-verified on-chain identity vault built on Polkadot using PolkaVM. This project combines smart contracts and ZK runtime development to create a secure and private identity management system.
 
